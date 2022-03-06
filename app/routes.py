@@ -1,7 +1,7 @@
 from app import app
 from flask import render_template, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
-from app.forms import AddForm, DeleteForm, SearchForm, LoginForm
+from app.forms import AddForm, DeleteForm, SearchForm, LoginForm, ChangePasswordForm
 from app import db
 from app.models import City, User
 import sys
@@ -28,11 +28,19 @@ def login():
         return redirect(url_for('view'))
     return render_template('login.html', form=form)
 
-
 @app.route('/logout')
 def logout():
     logout_user()
     return redirect(url_for('index'))
+
+@app.route('/change_password')
+def change_password():
+    form = ChangePasswordForm()
+    '''
+    Implement this function for Activity 9.
+    Verify that old password matches and the new password and retype also match.
+    '''
+    return render_template('change_password.html', form = form)
 
 def is_admin():
     '''
@@ -113,6 +121,7 @@ def view():
     all = db.session.query(City).all()
     print(all, file=sys.stderr)
     return render_template('view_cities.html', cities=all)
+
 
 @app.route('/sort_by_name')
 def sort_by_name():
