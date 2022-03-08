@@ -1,6 +1,6 @@
 from app import app
 from flask import render_template, redirect, url_for, flash
-from flask_login import login_user, logout_user, login_required, current_user
+from flask_login import login_user, logout_user, login_required, current_user, werkzeug
 from app.forms import AddForm, DeleteForm, SearchForm, LoginForm, ChangePasswordForm
 from app import db
 from app.models import City, User
@@ -30,16 +30,36 @@ def login():
 
 @app.route('/logout')
 def logout():
+    '''
+    Implement this function for Activity 9.
+    Verify that old password matches and the new password and retype also match.
+    '''
     logout_user()
     return redirect(url_for('index'))
 
 @app.route('/change_password')
 def change_password():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
     form = ChangePasswordForm()
-    '''
-    Implement this function for Activity 9.
-    Verify that old password matches and the new password and retype also match.
-    '''
+    if form.validate_on_submit():
+        # check old password is right 
+        password_hash = db.session.query(User).filter_by(password = form.old_pass.data)
+        # function to check hash password
+        check_password_hash(password_hash, form.old_pass.data)
+        if check_password_hash:
+            # true
+            # function to generate hash
+            password_hash = generate_password_hash(password)
+            user = User(username = current_user.role)
+            user.set_password(password_hash)
+            db.session.change(user)
+            db.session.commit()
+            print('Password changed successfully', file=sys.stderr)
+            return redirect(url_for('view'))
+        else:
+            print('Login failed', file=sys.stderr)
+            return redirect(url_for('login'))
     return render_template('change_password.html', form = form)
 
 def is_admin():
